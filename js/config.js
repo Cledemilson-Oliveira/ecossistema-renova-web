@@ -1,6 +1,6 @@
 export const RENOVA_CONFIG = Object.freeze({
   supabaseUrl: 'https://nnjvxomaermffqnmwtzr.supabase.co',
-  supabasePublishableKey: 'REPLACE_WITH_SUPABASE_PUBLISHABLE_KEY',
+  supabasePublishableKey: 'sb_publishable_N4BznMYx8cvNxffvm-BWZg__MW7xV8g',
   siteUrl: 'https://ecossistemarenova.servicosgold.com.br',
   githubPagesUrl: 'https://cledemilson-oliveira.github.io/ecossistema-renova-web/',
   brand: {
