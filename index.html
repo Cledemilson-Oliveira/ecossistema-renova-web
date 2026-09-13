@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#f6f9fc" />
+  <meta name="description" content="Ecossistema RENOVA — gestão, vendas, operação e inteligência em uma única experiência." />
+  <title>Ecossistema RENOVA</title>
+  <script>try{const t=localStorage.getItem('renova_web_theme');document.documentElement.dataset.theme=t==='dark'?'dark':'light'}catch(_){}</script>
+  <link rel="stylesheet" href="./css/styles.css?v=20260913-001" />
+</head>
+<body>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <section id="authView" class="auth-view">
+    <div class="auth-visual">
+      <div class="auth-brand">
+        <img id="authLogo" alt="Logo Ecossistema RENOVA" />
+        <div><strong>ECOSSISTEMA RENOVA</strong><span>Gestão • Controle • Resultados</span></div>
+      </div>
+      <div class="auth-copy">
+        <span class="eyebrow">PESSOAS • TECNOLOGIA • RESULTADOS</span>
+        <h1>Seu negócio conectado em uma única operação.</h1>
+        <p>CRM, vendas, financeiro, tarefas, produtos, afiliados e inteligência RENOVA trabalhando sobre a mesma base de dados.</p>
+        <div class="feature-row"><span>Supabase</span><span>Multiempresa</span><span>RENOVA IA</span></div>
+      </div>
+    </div>
+
+    <div class="auth-panel">
+      <div class="auth-card">
+        <div class="mobile-brand"><img id="authLogoMobile" alt="Logo RENOVA" /><div><strong>ECOSSISTEMA RENOVA</strong><span>Gestão • Controle • Resultados</span></div></div>
+        <span class="eyebrow">ACESSO SEGURO</span>
+        <h2>Entrar no Ecossistema</h2>
+        <p class="muted">Use sua conta RENOVA para acessar sua empresa e seus módulos.</p>
+        <form id="loginForm" class="auth-form" novalidate>
+          <label>E-mail<input id="loginEmail" type="email" autocomplete="email" placeholder="voce@email.com" required /></label>
+          <label>Senha<input id="loginPassword" type="password" autocomplete="current-password" placeholder="Sua senha" required /></label>
+          <button id="loginBtn" class="primary-btn full" type="submit">Entrar</button>
+        </form>
+        <button id="forgotBtn" class="link-btn" type="button">Esqueci minha senha</button>
+        <div id="setupNotice" class="setup-notice hidden"></div>
+      </div>
+    </div>
+  </section>
+
+  <div id="appView" class="app-shell hidden">
+    <aside id="sidebar" class="sidebar" aria-label="Navegação principal">
+      <div class="sidebar-brand">
+        <img id="sidebarLogo" alt="Logo Ecossistema RENOVA" />
+        <div><strong>ECOSSISTEMA RENOVA</strong><span>Gestão • Controle • Resultados</span></div>
+      </div>
+
+      <nav id="mainNav" class="main-nav">
+        <button class="nav-item active" data-page="dashboard" type="button"><span>⌂</span><b>Painel</b></button>
+        <button class="nav-item" data-page="crm" type="button"><span>◎</span><b>CRM / Clientes</b></button>
+        <button class="nav-item" data-page="sales" type="button"><span>◈</span><b>Vendas</b></button>
+        <button class="nav-item" data-page="orders" type="button"><span>▤</span><b>Ordens de Serviço</b></button>
+        <button class="nav-item" data-page="tasks" type="button"><span>▣</span><b>Tarefas / Agenda</b></button>
+        <button class="nav-item" data-page="products" type="button"><span>⬡</span><b>Produtos / Serviços</b></button>
+        <button class="nav-item" data-page="finance" type="button"><span>▥</span><b>Financeiro</b></button>
+        <button class="nav-item accent" data-page="ai" type="button"><span>✦</span><b>RENOVA IA</b></button>
+        <button class="nav-item" data-page="affiliates" type="button"><span>◇</span><b>Afiliados</b></button>
+        <button class="nav-item" data-page="members" type="button"><span>◆</span><b>Área de Membros</b></button>
+        <button class="nav-item" data-page="settings" type="button"><span>⛭</span><b>Configurações</b></button>
+        <button class="nav-item owner-only hidden" data-page="admin" type="button"><span>⚙</span><b>Administração</b></button>
+      </nav>
+
+      <section class="company-card">
+        <img id="companyLogo" class="company-logo" alt="Logo Ecossistema RENOVA" />
+        <strong>ECOSSISTEMA RENOVA</strong>
+        <span>Gestão • Controle • Resultados</span>
+        <div class="company-divider"></div>
+        <img id="developerPhoto" class="developer-photo" alt="Cledemilson Oliveira de Assis" />
+        <small>Desenvolvedor do Ecossistema RENOVA</small>
+        <b>Cledemilson Oliveira de Assis</b>
+        <a href="https://ecossistemarenova.servicosgold.com.br" target="_blank" rel="noopener noreferrer">↗ Acessar site oficial</a>
+      </section>
+
+      <div class="sidebar-footer">
+        <div class="user-chip"><div id="userAvatar" class="avatar">R</div><div><strong id="sidebarUserName">Usuário RENOVA</strong><span id="sidebarUserRole">Usuário</span></div></div>
+        <button id="logoutBtn" class="icon-btn" type="button" aria-label="Sair">↪</button>
+      </div>
+    </aside>
+
+    <div id="mobileBackdrop" class="mobile-backdrop"></div>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button id="mobileMenuBtn" class="mobile-menu-btn" type="button" aria-expanded="false" aria-controls="sidebar"><span>☰</span><b>Menu</b></button>
+        <div class="topbar-title"><span id="pageEyebrow" class="eyebrow">VISÃO GERAL</span><h1 id="pageTitle">Painel</h1></div>
+        <div class="topbar-actions">
+          <span id="connectionBadge" class="connection-badge"><i></i> Conectando...</span>
+          <button id="themeToggle" class="icon-btn" type="button" aria-label="Alternar tema">☾</button>
+        </div>
+      </header>
+
+      <div class="content-wrap">
+        <section id="dashboardPage" class="page active">
+          <div class="welcome-row">
+            <div><h2 id="welcomeText">Olá! 👋</h2><p>Uma visão integrada da sua operação RENOVA.</p></div>
+          </div>
+          <div class="metrics-grid">
+            <article class="metric-card"><span>Empresa ativa</span><strong id="metricCompany">—</strong><small>Contexto atual</small></article>
+            <article class="metric-card"><span>Plano</span><strong id="metricPlan">—</strong><small>Acesso RENOVA</small></article>
+            <article class="metric-card"><span>Perfil</span><strong id="metricRole">—</strong><small>Permissão atual</small></article>
+            <article class="metric-card"><span>Status</span><strong id="metricStatus">Conectado</strong><small>Supabase</small></article>
+          </div>
+          <article class="panel migration-panel">
+            <span class="eyebrow">MIGRAÇÃO WEB</span>
+            <h3>Base GitHub Pages + Supabase ativa</h3>
+            <p>Esta interface é a nova camada Web do Ecossistema RENOVA. Os módulos serão migrados de forma incremental, preservando o Streamlit enquanto a versão Web é validada.</p>
+          </article>
+        </section>
+
+        <section id="crmPage" class="page"><div class="placeholder"><span>◎</span><h2>CRM / Clientes</h2><p>Módulo em migração para a arquitetura Web.</p></div></section>
+        <section id="salesPage" class="page"><div class="placeholder"><span>◈</span><h2>Vendas</h2><p>Módulo em migração para a arquitetura Web.</p></div></section>
+        <section id="ordersPage" class="page"><div class="placeholder"><span>▤</span><h2>Ordens de Serviço</h2><p>Módulo em migração para a arquitetura Web.</p></div></section>
+        <section id="tasksPage" class="page"><div class="placeholder"><span>▣</span><h2>Tarefas / Agenda</h2><p>Módulo em migração para a arquitetura Web.</p></div></section>
+        <section id="productsPage" class="page"><div class="placeholder"><span>⬡</span><h2>Produtos / Serviços</h2><p>Módulo em migração para a arquitetura Web.</p></div></section>
+        <section id="financePage" class="page"><div class="placeholder"><span>▥</span><h2>Financeiro</h2><p>Módulo em migração para a arquitetura Web.</p></div></section>
+        <section id="aiPage" class="page"><div class="placeholder glow"><span>✦</span><h2>RENOVA IA</h2><p>Camada inteligente será ligada às permissões e dados da empresa.</p></div></section>
+        <section id="affiliatesPage" class="page"><div class="placeholder"><span>◇</span><h2>Afiliados</h2><p>Módulo em migração para a arquitetura Web.</p></div></section>
+        <section id="membersPage" class="page"><div class="placeholder"><span>◆</span><h2>Área de Membros</h2><p>Módulo em migração para a arquitetura Web.</p></div></section>
+        <section id="settingsPage" class="page"><div class="placeholder"><span>⛭</span><h2>Configurações</h2><p>Integrações e preferências da empresa.</p></div></section>
+        <section id="adminPage" class="page"><div class="placeholder"><span>⚙</span><h2>Administração</h2><p>Área exclusiva da Conta Dono e administradores autorizados.</p></div></section>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="./js/app.js?v=20260913-001"></script>
+</body>
+</html>
