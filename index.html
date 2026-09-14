@@ -4,15 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#f6f9fc" />
-  <meta name="description" content="Ecossistema RENOVA — gestão, vendas, operação e inteligência em uma única experiência." />
+  <meta name="description" content="Ecossistema RENOVA — marketplace, gestão, vendas, operação e inteligência em uma única experiência." />
   <title>Ecossistema RENOVA</title>
   <script>try{const t=localStorage.getItem('renova_web_theme');document.documentElement.dataset.theme=t==='dark'?'dark':'light'}catch(_){}</script>
-  <link rel="stylesheet" href="./css/styles.css?v=20260913-001" />
+  <link rel="stylesheet" href="./css/styles.css?v=20260913-003" />
+  <link rel="stylesheet" href="./css/dashboard.css?v=20260913-003" />
+  <link rel="stylesheet" href="./css/public-store.css?v=20260913-003" />
 </head>
 <body>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <section id="authView" class="auth-view">
+  <section id="authView" class="auth-view hidden">
     <div class="auth-visual">
       <div class="auth-brand">
         <img id="authLogo" alt="Logo Ecossistema RENOVA" />
@@ -99,17 +101,19 @@
           <div class="welcome-row">
             <div><h2 id="welcomeText">Olá! 👋</h2><p>Uma visão integrada da sua operação RENOVA.</p></div>
           </div>
-          <div class="metrics-grid">
-            <article class="metric-card"><span>Empresa ativa</span><strong id="metricCompany">—</strong><small>Contexto atual</small></article>
-            <article class="metric-card"><span>Plano</span><strong id="metricPlan">—</strong><small>Acesso RENOVA</small></article>
-            <article class="metric-card"><span>Perfil</span><strong id="metricRole">—</strong><small>Permissão atual</small></article>
-            <article class="metric-card"><span>Status</span><strong id="metricStatus">Conectado</strong><small>Supabase</small></article>
+          <div class="dashboard-context"><strong id="dashboardContext">Carregando contexto...</strong><span id="dashboardUpdated">Atualizando indicadores...</span></div>
+          <div class="dashboard-metrics">
+            <article class="dashboard-metric positive"><span class="metric-label">Faturamento do mês</span><strong id="dashRevenue">R$ 0,00</strong><small>Receitas pagas no Financeiro</small></article>
+            <article class="dashboard-metric"><span class="metric-label">Vendas fechadas</span><strong id="dashSalesCount">0</strong><small id="dashSalesValue">R$ 0,00</small></article>
+            <article class="dashboard-metric"><span class="metric-label">Clientes / Leads</span><strong id="dashContacts">0</strong><small>Contatos no CRM</small></article>
+            <article class="dashboard-metric warning"><span class="metric-label">Tarefas abertas</span><strong id="dashOpenTasks">0</strong><small>Operação pendente</small></article>
+            <article class="dashboard-metric danger"><span class="metric-label">Despesas pagas</span><strong id="dashExpense">R$ 0,00</strong><small>Saídas do mês</small></article>
+            <article class="dashboard-metric"><span class="metric-label">Resultado operacional</span><strong id="dashBalance">R$ 0,00</strong><small>Receitas − despesas</small></article>
           </div>
-          <article class="panel migration-panel">
-            <span class="eyebrow">MIGRAÇÃO WEB</span>
-            <h3>Base GitHub Pages + Supabase ativa</h3>
-            <p>Esta interface é a nova camada Web do Ecossistema RENOVA. Os módulos serão migrados de forma incremental, preservando o Streamlit enquanto a versão Web é validada.</p>
-          </article>
+          <div class="dashboard-columns">
+            <article class="dashboard-panel"><div class="panel-heading"><div><span class="eyebrow">ATIVIDADE</span><h3>Movimentações recentes</h3></div><span>Dados integrados</span></div><div id="dashboardActivity" class="activity-list"><div class="empty-state">Carregando...</div></div></article>
+            <article class="dashboard-panel"><div class="panel-heading"><div><span class="eyebrow">ATENÇÃO</span><h3>Operação agora</h3></div></div><div class="operation-stack"><div class="operation-row"><span>Ordens de serviço abertas</span><strong id="dashOpenOrders">0</strong></div><div class="operation-row"><span>Tarefas atrasadas</span><strong id="dashOverdueTasks">0</strong></div><div class="operation-row"><span>Dependem da Conta Dono</span><strong id="dashOwnerAction">0</strong></div><div class="operation-row"><span>Tarefas bloqueadas</span><strong id="dashBlockedTasks">0</strong></div></div><p class="operation-note">O painel usa o Financeiro como fonte de faturamento para evitar duplicidade com Vendas.</p></article>
+          </div>
         </section>
 
         <section id="crmPage" class="page"><div class="placeholder"><span>◎</span><h2>CRM / Clientes</h2><p>Módulo em migração para a arquitetura Web.</p></div></section>
@@ -127,6 +131,6 @@
     </main>
   </div>
 
-  <script type="module" src="./js/app.js?v=20260913-002"></script>
+  <script type="module" src="./js/app.js?v=20260913-003"></script>
 </body>
 </html>
