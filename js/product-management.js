@@ -1,5 +1,4 @@
 const esc=(v='')=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-const money=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
 
 export function createProductManagement({supabase,getContext,showToast,onDataChange}){
   const ctx=()=>getContext?.()||{};
@@ -107,6 +106,7 @@ export function createProductManagement({supabase,getContext,showToast,onDataCha
     const allowed=await canManage();
     const newBtn=page.querySelector('#productNew');
     if(newBtn)newBtn.style.display=allowed?'':'none';
+    page.querySelectorAll('[data-product-public],[data-product-active]').forEach(btn=>btn.style.display=allowed?'':'none');
     page.querySelectorAll('[data-product-edit],[data-product-delete]').forEach(x=>x.remove());
     if(!allowed){
       const shell=page.querySelector('.module-shell');
