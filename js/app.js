@@ -1,6 +1,7 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import { RENOVA_CONFIG, isSupabaseConfigured } from './config.js?v=20260913-001';
 import { loadDashboard } from './dashboard-module.js?v=20260913-002';
+import { createPublicStore } from './public-store.js?v=20260913-003';
 
 const $ = (selector, root=document) => root.querySelector(selector);
 const $$ = (selector, root=document) => [...root.querySelectorAll(selector)];
@@ -11,6 +12,8 @@ let supabase = null;
 let currentUser = null;
 let currentProfile = null;
 let currentCompany = null;
+let publicStore = null;
+let publicCatalogLoaded = false;
 
 const pageMeta = {
   dashboard:['VISÃO GERAL','Painel'], crm:['GESTÃO','CRM / Clientes'], sales:['GESTÃO','Vendas'],
@@ -45,6 +48,7 @@ function applyTheme(theme){
   const meta=$('meta[name="theme-color"]');
   if(meta)meta.content=theme==='dark'?'#061426':'#f6f9fc';
   const btn=$('#themeToggle'); if(btn)btn.textContent=theme==='dark'?'☀':'☾';
+  publicStore?.syncThemeIcon?.();
 }
 
 function closeMobileMenu(){
@@ -128,6 +132,7 @@ async function loadProfileAndCompany(){
 
 async function showApp(session){
   currentUser=session.user;
+  publicStore?.hide?.();
   $('#authView').classList.add('hidden');
   $('#appView').classList.remove('hidden');
   setConnection('Conectado');
@@ -138,10 +143,30 @@ async function showApp(session){
   }
   goToPage('dashboard');
 }
+
 function showAuth(){
   currentUser=null;currentProfile=null;currentCompany=null;
+  publicStore?.hide?.();
   $('#appView').classList.add('hidden');
   $('#authView').classList.remove('hidden');
+}
+
+async function showPublic(){
+  currentUser=null;currentProfile=null;currentCompany=null;
+  $('#appView').classList.add('hidden');
+  $('#authView').classList.add('hidden');
+  publicStore?.show?.();
+  if(!publicCatalogLoaded&&publicStore){
+    publicCatalogLoaded=true;
+    try{await publicStore.loadCatalog();}catch(err){publicCatalogLoaded=false;console.error('Public store load',err);}
+  }
+}
+
+function ensureAuthBackButton(){
+  if($('#backPublicBtn'))return;
+  const forgot=$('#forgotBtn');if(!forgot)return;
+  const btn=document.createElement('button');btn.id='backPublicBtn';btn.className='link-btn';btn.type='button';btn.textContent='← Voltar para a vitrine pública';btn.addEventListener('click',showPublic);
+  forgot.insertAdjacentElement('afterend',btn);
 }
 
 async function login(event){
@@ -162,7 +187,7 @@ async function login(event){
 
 async function logout(){
   if(supabase) await supabase.auth.signOut();
-  showAuth();
+  await showPublic();
 }
 
 async function forgotPassword(){
@@ -187,6 +212,7 @@ function bindUi(){
   $('#mainNav')?.addEventListener('click',e=>{const btn=e.target.closest('[data-page]');if(btn)goToPage(btn.dataset.page);});
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMobileMenu();});
   window.addEventListener('resize',()=>{if(innerWidth>760)closeMobileMenu();});
+  ensureAuthBackButton();
 }
 
 async function initSupabase(){
@@ -199,10 +225,17 @@ async function initSupabase(){
     return;
   }
   supabase=createClient(RENOVA_CONFIG.supabaseUrl,RENOVA_CONFIG.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  publicStore=createPublicStore({
+    supabase,
+    config:RENOVA_CONFIG,
+    showToast,
+    onLogin:showAuth,
+    onThemeToggle:()=>applyTheme(root.dataset.theme==='dark'?'light':'dark')
+  });
   const {data:{session}}=await supabase.auth.getSession();
-  if(session)await showApp(session);else showAuth();
+  if(session)await showApp(session);else await showPublic();
   supabase.auth.onAuthStateChange(async(event,session)=>{
-    if(event==='SIGNED_OUT'||!session)showAuth();
+    if(event==='SIGNED_OUT'||!session)await showPublic();
     else if(event==='SIGNED_IN'||event==='TOKEN_REFRESHED')await showApp(session);
   });
 }
