@@ -5,6 +5,7 @@ const dt=v=>v?new Intl.DateTimeFormat('pt-BR',{dateStyle:'short',timeStyle:'shor
 const statusClass=v=>{const s=low(v);if(['confirmado','concluido'].includes(s))return'ok';if(s==='solicitado')return'warn';if(['cancelado','recusado','faltou'].includes(s))return'bad';return'info'};
 const badge=v=>`<span class="module-status ${statusClass(v)}">${esc(v||'—')}</span>`;
 const empty=t=>`<div class="module-empty">${esc(t)}</div>`;
+const minutes=v=>{const [h,m]=String(v||'').split(':').map(Number);return Number.isFinite(h)&&Number.isFinite(m)?h*60+m:NaN};
 
 export function createAgendaModule({supabase,getContext,showToast,onDataChange}){
   const ctx=()=>getContext?.()||{};
@@ -29,11 +30,21 @@ export function createAgendaModule({supabase,getContext,showToast,onDataChange})
       <div class="module-form-grid"><label>E-mail<input class="module-input" id="apEmail" type="email" value="${esc(prof?.email||'')}"></label><label>WhatsApp<input class="module-input" id="apPhone" value="${esc(prof?.telefone||'')}"></label></div>
       <div class="module-note"><strong>Produtos / serviços atendidos</strong><br>Marque os itens para os quais este profissional aceita agendamentos.</div>
       <div style="display:grid;gap:8px">${products.length?products.map(p=>`<label class="module-check"><input type="checkbox" data-agenda-product="${p.id}" ${currentLinks.has(p.id)?'checked':''}><span>${esc(p.nome)}${p.agenda_habilitada?'':' • agenda ainda não habilitada no produto'}</span></label>`).join(''):empty('Crie um produto ou serviço antes de vincular um profissional.')}</div>
-      <div class="module-note"><strong>Disponibilidade semanal</strong><br>Ative os dias em que o profissional atende. Nesta versão, cada dia usa uma faixa contínua; novos períodos podem ser adicionados depois sem mudar a arquitetura.</div>
+      <div class="module-note"><strong>Disponibilidade semanal</strong><br>Ative os dias em que o profissional atende. O horário final precisa ser posterior ao inicial.</div>
       <div style="display:grid;gap:8px">${dayNames.map((name,i)=>{const d=byDay.get(i);return `<div class="module-form-grid" style="align-items:end"><label class="module-check"><input type="checkbox" data-day-enabled="${i}" ${d?'checked':''}><span>${name}</span></label><label>Início<input class="module-input" type="time" data-day-start="${i}" value="${d?String(d.hora_inicio).slice(0,5):'09:00'}"></label><label>Fim<input class="module-input" type="time" data-day-end="${i}" value="${d?String(d.hora_fim).slice(0,5):'18:00'}"></label></div>`}).join('')}</div>
       <div class="module-form-actions"><button class="module-btn" data-agenda-close type="button">Cancelar</button><button class="module-btn primary" id="agendaProfessionalSave" type="submit">Salvar profissional e agenda</button></div>
     </form>`,(m,close)=>m.querySelector('#agendaProfessionalForm').addEventListener('submit',async e=>{
-      e.preventDefault();const empresa=companyId(),btn=m.querySelector('#agendaProfessionalSave');btn.disabled=true;btn.textContent='Salvando...';
+      e.preventDefault();const empresa=companyId(),btn=m.querySelector('#agendaProfessionalSave');
+      const schedule=[];
+      for(let i=0;i<7;i++){
+        if(!m.querySelector(`[data-day-enabled="${i}"]`)?.checked)continue;
+        const start=m.querySelector(`[data-day-start="${i}"]`)?.value||'';
+        const end=m.querySelector(`[data-day-end="${i}"]`)?.value||'';
+        if(!start||!end||!Number.isFinite(minutes(start))||!Number.isFinite(minutes(end))){showToast(`${dayNames[i]}: informe os horários de início e fim.`);return}
+        if(minutes(end)<=minutes(start)){showToast(`${dayNames[i]}: o horário final precisa ser depois do horário inicial.`);m.querySelector(`[data-day-end="${i}"]`)?.focus();return}
+        schedule.push({dia_semana:i,hora_inicio:start,hora_fim:end});
+      }
+      btn.disabled=true;btn.textContent='Salvando...';
       try{
         let id=prof?.id;
         const base={empresa_id:empresa,nome:m.querySelector('#apName').value.trim(),email:m.querySelector('#apEmail').value.trim()||null,telefone:m.querySelector('#apPhone').value.trim()||null,ativo:true,atualizado_em:new Date().toISOString()};
@@ -42,15 +53,15 @@ export function createAgendaModule({supabase,getContext,showToast,onDataChange})
         const {error:delRel}=await supabase.from('agenda_produto_profissionais').delete().eq('empresa_id',empresa).eq('profissional_id',id);if(delRel)throw delRel;
         if(selected.length){const {error}=await supabase.from('agenda_produto_profissionais').insert(selected.map(produto_id=>({empresa_id:empresa,produto_id,profissional_id:id,intervalo_min:15,ativo:true})));if(error)throw error}
         const {error:delDisp}=await supabase.from('agenda_disponibilidades').delete().eq('empresa_id',empresa).eq('profissional_id',id);if(delDisp)throw delDisp;
-        const rows=[];for(let i=0;i<7;i++){if(!m.querySelector(`[data-day-enabled="${i}"]`)?.checked)continue;rows.push({empresa_id:empresa,profissional_id:id,dia_semana:i,hora_inicio:m.querySelector(`[data-day-start="${i}"]`).value,hora_fim:m.querySelector(`[data-day-end="${i}"]`).value,ativo:true})}
+        const rows=schedule.map(x=>({empresa_id:empresa,profissional_id:id,...x,ativo:true}));
         if(rows.length){const {error}=await supabase.from('agenda_disponibilidades').insert(rows);if(error)throw error}
         close();showToast('Profissional e horários atualizados.');await reload();await onDataChange?.();
-      }catch(err){showToast(err.message||'Não foi possível salvar a agenda.');btn.disabled=false;btn.textContent='Salvar profissional e agenda'}
+      }catch(err){const msg=String(err?.message||'');showToast(msg.includes('agenda_disponibilidades_check')?'Revise os horários: o fim do atendimento precisa ser depois do início.':(msg||'Não foi possível salvar a agenda.'));btn.disabled=false;btn.textContent='Salvar profissional e agenda'}
     }));
   }
 
   function blockTime(professionals,reload){
-    modal('Bloquear período da agenda',`<form id="agendaBlockForm" class="module-form"><label>Profissional<select class="module-select" id="abProf" required>${professionals.map(p=>`<option value="${p.id}">${esc(p.nome)}</option>`).join('')}</select></label><div class="module-form-grid"><label>Início<input class="module-input" id="abStart" type="datetime-local" required></label><label>Fim<input class="module-input" id="abEnd" type="datetime-local" required></label></div><label>Motivo<input class="module-input" id="abReason" placeholder="Férias, reunião, compromisso..."></label><div class="module-form-actions"><button class="module-btn" data-agenda-close type="button">Cancelar</button><button class="module-btn primary" type="submit">Bloquear período</button></div></form>`,(m,close)=>m.querySelector('#agendaBlockForm').addEventListener('submit',async e=>{e.preventDefault();const {error}=await supabase.from('agenda_bloqueios').insert({empresa_id:companyId(),profissional_id:m.querySelector('#abProf').value,inicio_em:new Date(m.querySelector('#abStart').value).toISOString(),fim_em:new Date(m.querySelector('#abEnd').value).toISOString(),motivo:m.querySelector('#abReason').value.trim()||null,criado_por:userId()});if(error)return showToast(error.message);close();showToast('Período bloqueado.');reload()}));
+    modal('Bloquear período da agenda',`<form id="agendaBlockForm" class="module-form"><label>Profissional<select class="module-select" id="abProf" required>${professionals.map(p=>`<option value="${p.id}">${esc(p.nome)}</option>`).join('')}</select></label><div class="module-form-grid"><label>Início<input class="module-input" id="abStart" type="datetime-local" required></label><label>Fim<input class="module-input" id="abEnd" type="datetime-local" required></label></div><label>Motivo<input class="module-input" id="abReason" placeholder="Férias, reunião, compromisso..."></label><div class="module-form-actions"><button class="module-btn" data-agenda-close type="button">Cancelar</button><button class="module-btn primary" type="submit">Bloquear período</button></div></form>`,(m,close)=>m.querySelector('#agendaBlockForm').addEventListener('submit',async e=>{e.preventDefault();const start=m.querySelector('#abStart').value,end=m.querySelector('#abEnd').value;if(!start||!end||new Date(end)<=new Date(start))return showToast('O fim do bloqueio precisa ser depois do início.');const {error}=await supabase.from('agenda_bloqueios').insert({empresa_id:companyId(),profissional_id:m.querySelector('#abProf').value,inicio_em:new Date(start).toISOString(),fim_em:new Date(end).toISOString(),motivo:m.querySelector('#abReason').value.trim()||null,criado_por:userId()});if(error)return showToast(error.message);close();showToast('Período bloqueado.');reload()}));
   }
 
   async function load(){
