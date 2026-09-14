@@ -1,18 +1,18 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import { RENOVA_CONFIG, isSupabaseConfigured } from './config.js?v=20260914-001';
-import { loadDashboard } from './dashboard-module.js?v=20260914-004';
+import { loadDashboard } from './dashboard-module.js?v=20260914-005';
 import { createPublicStore } from './public-store.js?v=20260914-002';
 import { createInternalModules } from './internal-modules.js?v=20260914-001';
 import { createExtrasModules } from './extras-modules.js?v=20260914-001';
 import { createAdminPlanModule } from './admin-plan-module.js?v=20260914-001';
 import { createNetworkingMediaModule } from './networking-media-module.js?v=20260914-001';
 import { createProductManagement } from './product-management.js?v=20260914-002';
-import { createAgendaModule } from './agenda-module.js?v=20260914-001';
+import { createAgendaModule } from './agenda-module.js?v=20260914-002';
 import { createPublicBooking } from './public-booking.js?v=20260914-001';
 import { createDeveloperPage } from './developer-page.js?v=20260914-001';
 import { createSolutionsModule } from './solutions-module.js?v=20260914-001';
-import { createFoodModule } from './food-module.js?v=20260914-001';
-import { createPublicFood } from './public-food.js?v=20260914-002';
+import { createFoodModule } from './food-module.js?v=20260914-002';
+import { createPublicFood } from './public-food.js?v=20260914-003';
 import { createEntrepreneurIntegrations } from './entrepreneur-integrations.js?v=20260914-001';
 
 const $=(selector,root=document)=>root.querySelector(selector);
