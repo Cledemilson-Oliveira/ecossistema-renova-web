@@ -12,7 +12,7 @@ import { createPublicBooking } from './public-booking.js?v=20260914-001';
 import { createDeveloperPage } from './developer-page.js?v=20260914-001';
 import { createSolutionsModule } from './solutions-module.js?v=20260914-001';
 import { createFoodModule } from './food-module.js?v=20260914-001';
-import { createPublicFood } from './public-food.js?v=20260914-001';
+import { createPublicFood } from './public-food.js?v=20260914-002';
 
 const $=(selector,root=document)=>root.querySelector(selector);
 const $$=(selector,root=document)=>[...root.querySelectorAll(selector)];
