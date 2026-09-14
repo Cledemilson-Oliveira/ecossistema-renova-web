@@ -1,5 +1,6 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import { RENOVA_CONFIG, isSupabaseConfigured } from './config.js?v=20260913-001';
+import { loadDashboard } from './dashboard-module.js?v=20260913-002';
 
 const $ = (selector, root=document) => root.querySelector(selector);
 const $$ = (selector, root=document) => [...root.querySelectorAll(selector)];
@@ -66,6 +67,9 @@ function goToPage(page){
   $('#pageEyebrow').textContent=eyebrow;
   $('#pageTitle').textContent=title;
   closeMobileMenu();
+  if(page==='dashboard'&&supabase&&currentCompany?.id){
+    loadDashboard({supabase,company:currentCompany,profile:currentProfile}).catch(err=>console.error('Dashboard refresh',err));
+  }
 }
 
 function initials(name='RENOVA'){
@@ -87,11 +91,11 @@ function renderUserContext(){
   $('#sidebarUserName').textContent=name;
   $('#sidebarUserRole').textContent=role;
   $('#userAvatar').textContent=initials(name);
-  $('#welcomeText').textContent=`Olá, ${name.split(' ')[0]}! 👋`;
-  $('#metricCompany').textContent=company.nome||'RENOVA';
-  $('#metricPlan').textContent=(company.plano_codigo||'free').toUpperCase();
-  $('#metricRole').textContent=role;
-  $('#metricStatus').textContent='Conectado';
+  const welcome=$('#welcomeText'); if(welcome)welcome.textContent=`Olá, ${name.split(' ')[0]}! 👋`;
+  const metricCompany=$('#metricCompany'); if(metricCompany)metricCompany.textContent=company.nome||'RENOVA';
+  const metricPlan=$('#metricPlan'); if(metricPlan)metricPlan.textContent=(company.plano_codigo||'free').toUpperCase();
+  const metricRole=$('#metricRole'); if(metricRole)metricRole.textContent=role;
+  const metricStatus=$('#metricStatus'); if(metricStatus)metricStatus.textContent='Conectado';
   $$('.owner-only').forEach(el=>el.classList.toggle('hidden',!profile.dono_sistema));
 }
 
@@ -128,6 +132,10 @@ async function showApp(session){
   $('#appView').classList.remove('hidden');
   setConnection('Conectado');
   await loadProfileAndCompany();
+  if(currentCompany?.id){
+    try{await loadDashboard({supabase,company:currentCompany,profile:currentProfile});}
+    catch(err){console.error('Dashboard load',err);showToast('Painel conectado, mas alguns indicadores não puderam ser carregados.');}
+  }
   goToPage('dashboard');
 }
 function showAuth(){
