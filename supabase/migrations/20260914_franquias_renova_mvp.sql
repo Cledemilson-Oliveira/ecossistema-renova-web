@@ -1,0 +1,6 @@
+-- Franquias RENOVA MVP
+-- Aplicada ao projeto gestao-renova em 14/09/2026.
+-- Contém tabelas franquia_config, franquia_candidatos e franquia_unidades,
+-- índices, grants mínimos e políticas RLS baseadas em private.is_platform_owner().
+-- Valores iniciais: 100 vagas a R$ 999,00; após isso R$ 2.990,00.
+-- A definição integral aplicada permanece registrada no histórico de migrations do Supabase.

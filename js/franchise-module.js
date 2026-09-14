@@ -1,0 +1,44 @@
+const money=v=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v)||0);
+const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+const labels={novo:'Novo',em_analise:'Em análise',reuniao:'Reunião',qualificado:'Qualificado',aprovado:'Aprovado',recusado:'Recusado',arquivado:'Arquivado'};
+export function createFranchiseModule({supabase,getContext,showToast}){
+ const page=()=>document.getElementById('franchisesPage');
+ const owner=()=>Boolean(getContext()?.profile?.dono_sistema);
+ async function load(){
+  const root=page();if(!root)return;
+  root.innerHTML='<div class="fr-loading">Carregando Franquias RENOVA...</div>';
+  const [{data:config,error:ce},{data:candidates,error:cae},{data:units,error:ue}]=await Promise.all([
+   supabase.from('franquia_config').select('*').eq('id',true).maybeSingle(),
+   supabase.from('franquia_candidatos').select('*').order('criado_em',{ascending:false}),
+   supabase.from('franquia_unidades').select('*').order('criado_em',{ascending:false})
+  ]);
+  if(ce||cae||ue){console.error(ce||cae||ue);root.innerHTML='<div class="fr-error">Não foi possível carregar o módulo. Verifique a atualização do banco.</div>';return}
+  render(root,config||{},candidates||[],units||[]);bind(root,config||{},candidates||[]);
+ }
+ function render(root,cfg,candidates,units){
+  const ctx=getContext(),isOwner=owner(),mine=candidates.find(x=>x.usuario_id===ctx.user?.id);
+  const pioneerUsed=units.length,pioneerLeft=Math.max(0,Number(cfg.limite_pioneiros||100)-pioneerUsed);
+  root.innerHTML=`
+   <div class="fr-hero"><div><span class="eyebrow">EXPANSÃO DIGITAL E REGIONAL</span><h2>Franquias RENOVA</h2><p>Represente o Ecossistema RENOVA em sua região com operação digital, tecnologia, treinamento e suporte da matriz.</p></div><div class="fr-offer"><small>Condição pioneira</small><strong>${money(cfg.investimento_pioneiro||999)}</strong><span>${pioneerLeft} de ${cfg.limite_pioneiros||100} vagas disponíveis</span><em>Depois: ${money(cfg.investimento_padrao||2990)}</em></div></div>
+   <div class="fr-metrics"><article><span>Implantação</span><strong>${cfg.comissao_implantacao||40}%</strong></article><article><span>Recorrência</span><strong>${cfg.comissao_recorrente||25}%</strong></article><article><span>Operação</span><strong>Digital regional</strong></article><article><span>Território inicial</span><strong>Preferencial</strong></article></div>
+   ${isOwner?ownerView(cfg,candidates,units,pioneerLeft):candidateView(mine,ctx)}
+  `;
+ }
+ function candidateView(mine,ctx){
+  if(mine)return `<section class="fr-panel"><span class="eyebrow">MINHA CANDIDATURA</span><h3>Status: ${esc(labels[mine.status]||mine.status)}</h3><p>Recebemos seu interesse para ${esc(mine.cidade)}/${esc(mine.estado)}. A equipe RENOVA acompanhará as próximas etapas.</p></section>`;
+  return `<section class="fr-panel"><span class="eyebrow">PRÉ-CADASTRO</span><h3>Quero ser um Franqueado RENOVA</h3><form id="frCandidateForm" class="fr-form"><label>Nome completo<input name="nome" required value="${esc(ctx.profile?.nome||'')}"></label><label>E-mail<input name="email" type="email" required value="${esc(ctx.user?.email||'')}"></label><label>Telefone<input name="telefone"></label><label>Cidade<input name="cidade" required></label><label>Estado<input name="estado" required maxlength="40"></label><label>Faixa disponível<select name="faixa_investimento"><option>Até R$ 999</option><option>R$ 1.000 a R$ 2.990</option><option>Acima de R$ 2.990</option></select></label><label class="wide">Experiência comercial<textarea name="experiencia" rows="3"></textarea></label><label class="wide">Por que deseja representar a RENOVA?<textarea name="mensagem" rows="3"></textarea></label><button class="primary-btn" type="submit">Enviar candidatura</button></form></section>`;
+ }
+ function ownerView(cfg,candidates,units,left){
+  return `<section class="fr-panel"><div class="fr-head"><div><span class="eyebrow">CONTA DONO</span><h3>Gestão do programa</h3></div><b>${candidates.length} candidatos • ${units.length} unidades</b></div>
+  <form id="frConfigForm" class="fr-config"><label>Vagas pioneiras<input name="limite_pioneiros" type="number" min="1" value="${cfg.limite_pioneiros||100}"></label><label>Investimento pioneiro<input name="investimento_pioneiro" type="number" min="0" step=".01" value="${cfg.investimento_pioneiro||999}"></label><label>Investimento padrão<input name="investimento_padrao" type="number" min="0" step=".01" value="${cfg.investimento_padrao||2990}"></label><label>% implantação<input name="comissao_implantacao" type="number" min="0" max="100" step=".01" value="${cfg.comissao_implantacao||40}"></label><label>% recorrente<input name="comissao_recorrente" type="number" min="0" max="100" step=".01" value="${cfg.comissao_recorrente||25}"></label><button class="secondary-btn" type="submit">Salvar parâmetros</button></form></section>
+  <section class="fr-panel"><div class="fr-head"><h3>Candidatos</h3><span>${left} vagas pioneiras restantes</span></div><div class="fr-table">${candidates.length?candidates.map(c=>`<article><div><strong>${esc(c.nome)}</strong><span>${esc(c.cidade)}/${esc(c.estado)} • ${esc(c.email)}</span><small>${esc(c.faixa_investimento||'Faixa não informada')}</small></div><select data-candidate-status="${c.id}">${Object.entries(labels).map(([v,l])=>`<option value="${v}" ${c.status===v?'selected':''}>${l}</option>`).join('')}</select></article>`).join(''):'<div class="empty-state">Nenhuma candidatura recebida.</div>'}</div></section>
+  <section class="fr-panel"><h3>Criar unidade regional</h3><form id="frUnitForm" class="fr-form"><label>Candidato<select name="candidato_id"><option value="">Sem vínculo</option>${candidates.filter(c=>c.status==='aprovado').map(c=>`<option value="${c.id}" data-user="${c.usuario_id||''}">${esc(c.nome)}</option>`).join('')}</select></label><label>Código<input name="codigo" required placeholder="RNV-MARILIA-01"></label><label>Nome da unidade<input name="nome" required></label><label>Cidade<input name="cidade" required></label><label>Estado<input name="estado" required></label><label>Status<select name="status"><option value="implantacao">Implantação</option><option value="ativa">Ativa</option></select></label><button class="primary-btn" type="submit">Criar unidade</button></form><div class="fr-units">${units.map(u=>`<article><strong>${esc(u.nome)}</strong><span>${esc(u.codigo)} • ${esc(u.cidade)}/${esc(u.estado)}</span><b>${esc(u.status)}</b></article>`).join('')}</div></section>`;
+ }
+ function bind(root,cfg,candidates){
+  root.querySelector('#frCandidateForm')?.addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.currentTarget),ctx=getContext(),payload=Object.fromEntries(fd.entries());payload.usuario_id=ctx.user.id;const {error}=await supabase.from('franquia_candidatos').insert(payload);if(error)return showToast(error.message);showToast('Candidatura enviada com sucesso.');await load()});
+  root.querySelector('#frConfigForm')?.addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.currentTarget),p={};for(const [k,v] of fd)p[k]=Number(v);p.atualizado_em=new Date().toISOString();p.atualizado_por=getContext().user.id;const {error}=await supabase.from('franquia_config').update(p).eq('id',true);if(error)return showToast(error.message);showToast('Parâmetros atualizados.');await load()});
+  root.querySelectorAll('[data-candidate-status]').forEach(s=>s.addEventListener('change',async()=>{const status=s.value,p={status,atualizado_em:new Date().toISOString(),analisado_por:getContext().user.id,analisado_em:new Date().toISOString()};const {error}=await supabase.from('franquia_candidatos').update(p).eq('id',s.dataset.candidateStatus);if(error)return showToast(error.message);showToast('Status atualizado.');await load()}));
+  root.querySelector('#frUnitForm')?.addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.currentTarget),payload=Object.fromEntries(fd.entries()),sel=e.currentTarget.elements.candidato_id.selectedOptions[0];payload.candidato_id=payload.candidato_id||null;payload.franqueado_usuario_id=sel?.dataset.user||null;payload.codigo=payload.codigo.trim().toUpperCase();payload.comissao_implantacao=Number(cfg.comissao_implantacao||40);payload.comissao_recorrente=Number(cfg.comissao_recorrente||25);payload.criado_por=getContext().user.id;const {error}=await supabase.from('franquia_unidades').insert(payload);if(error)return showToast(error.message);showToast('Unidade RENOVA criada.');await load()});
+ }
+ return {load};
+}
