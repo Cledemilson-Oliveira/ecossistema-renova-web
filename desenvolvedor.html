@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#061426" />
+  <meta name="description" content="Conheça Cledemilson Oliveira de Assis, desenvolvedor do Ecossistema RENOVA, e agende uma consultoria gratuita." />
+  <title>Cledemilson Oliveira de Assis • Desenvolvedor do Ecossistema RENOVA</title>
+  <link rel="stylesheet" href="./css/developer-public.css?v=20260914-001" />
+</head>
+<body>
+  <header class="dp-header">
+    <a class="dp-brand" href="./" aria-label="Voltar ao Ecossistema RENOVA">
+      <img id="dpLogo" alt="Ecossistema RENOVA" />
+      <div><strong>ECOSSISTEMA RENOVA</strong><span>Gestão • Controle • Resultados</span></div>
+    </a>
+    <a class="dp-header-link" href="./">Conhecer o Ecossistema</a>
+  </header>
+
+  <main class="dp-main">
+    <section class="dp-hero">
+      <div class="dp-copy">
+        <span class="dp-eyebrow">DESENVOLVEDOR • ESTRATÉGIA • TECNOLOGIA</span>
+        <h1>Tecnologia para organizar operações, reduzir retrabalho e transformar processos em crescimento.</h1>
+        <p>O Ecossistema RENOVA nasceu para conectar gestão, vendas, relacionamento com clientes, financeiro, produtos, serviços, automações e inteligência em uma mesma estrutura. A proposta é simples: fazer a tecnologia trabalhar a favor da operação real.</p>
+        <div class="dp-actions">
+          <button id="dpBookTop" class="dp-btn primary" type="button">Agendar consultoria gratuita</button>
+          <a class="dp-btn secondary" href="./">Ver o Ecossistema RENOVA</a>
+        </div>
+      </div>
+      <aside class="dp-profile">
+        <div class="dp-photo-ring"><img id="dpPhoto" alt="Cledemilson Oliveira de Assis" /></div>
+        <span>Desenvolvedor do Ecossistema RENOVA</span>
+        <h2>Cledemilson Oliveira de Assis</h2>
+        <p>Desenvolvimento orientado à produtividade, integração e crescimento sustentável do negócio.</p>
+      </aside>
+    </section>
+
+    <section class="dp-intro">
+      <span class="dp-eyebrow">POR QUE O RENOVA EXISTE</span>
+      <h2>Um sistema não deve apenas armazenar informação. Ele deve ajudar a empresa a funcionar melhor.</h2>
+      <p>Foi dessa visão que surgiu o RENOVA: cada módulo conversa com os demais, evitando cadastros repetidos e transformando ações do dia a dia em uma operação conectada.</p>
+    </section>
+
+    <section class="dp-grid">
+      <article><strong>Gestão integrada</strong><p>CRM, vendas, financeiro, tarefas, produtos, serviços e clientes trabalhando sobre a mesma base.</p></article>
+      <article><strong>Automação com propósito</strong><p>Menos tarefas repetitivas e mais tempo para atendimento, estratégia, vendas e decisões importantes.</p></article>
+      <article><strong>Arquitetura para crescer</strong><p>Estrutura multiempresa e modular para adicionar novas soluções sem reconstruir toda a operação.</p></article>
+      <article><strong>Soluções por segmento</strong><p>RENOVA Agenda, RENOVA Food e outras verticais conectadas ao mesmo painel de controle.</p></article>
+    </section>
+
+    <section class="dp-journey">
+      <div><span class="dp-eyebrow">COMO EU POSSO AJUDAR</span><h2>Antes de indicar tecnologia, eu quero entender o processo.</h2></div>
+      <div class="dp-steps">
+        <article><b>01</b><strong>Entender</strong><p>Mapear a operação, os gargalos e o que hoje gera perda de tempo ou informação.</p></article>
+        <article><b>02</b><strong>Organizar</strong><p>Definir prioridades e conectar processos que precisam conversar entre si.</p></article>
+        <article><b>03</b><strong>Automatizar</strong><p>Aplicar tecnologia onde ela realmente reduz retrabalho e melhora a experiência.</p></article>
+      </div>
+    </section>
+
+    <section class="dp-cta">
+      <span class="dp-eyebrow">CONSULTORIA GRATUITA</span>
+      <h2>Quer analisar sua operação comigo?</h2>
+      <p>Escolha um dos horários realmente disponíveis. Você informa rapidamente seu contexto e a solicitação entra direto no módulo de Agendamentos da Conta Dono do Ecossistema RENOVA.</p>
+      <button id="dpBookBottom" class="dp-btn primary" type="button">Ver horários disponíveis</button>
+    </section>
+  </main>
+
+  <footer class="dp-footer">
+    <span>© Ecossistema RENOVA</span>
+    <span>Desenvolvido por Cledemilson Oliveira de Assis</span>
+  </footer>
+
+  <div id="dpToast" class="dp-toast" role="status" aria-live="polite"></div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+    import { RENOVA_CONFIG } from './js/config.js?v=20260914-001';
+    import { createPublicBooking } from './js/public-booking.js?v=20260914-001';
+
+    const logo=document.getElementById('dpLogo');
+    const photo=document.getElementById('dpPhoto');
+    logo.src=RENOVA_CONFIG.brand.logoUrl;
+    photo.src=RENOVA_CONFIG.brand.developerPhotoUrl;
+
+    const toast=document.getElementById('dpToast');
+    function showToast(message){
+      toast.textContent=message;
+      toast.classList.add('show');
+      clearTimeout(showToast.timer);
+      showToast.timer=setTimeout(()=>toast.classList.remove('show'),3200);
+    }
+
+    const supabase=createClient(RENOVA_CONFIG.supabaseUrl,RENOVA_CONFIG.supabasePublishableKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+    const booking=createPublicBooking({supabase,showToast});
+    const openBooking=()=>booking.openBySlug('consultoria-gratuita-desenvolvedor-renova');
+    document.getElementById('dpBookTop').addEventListener('click',openBooking);
+    document.getElementById('dpBookBottom').addEventListener('click',openBooking);
+  </script>
+</body>
+</html>
