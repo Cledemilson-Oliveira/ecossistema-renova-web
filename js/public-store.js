@@ -1,9 +1,11 @@
+import { createPublicCheckout } from './public-checkout.js?v=20260913-004';
+
 function esc(v=''){return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
 const money=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
 
 function ensureCss(){
   if(document.querySelector('link[data-public-store]'))return;
-  const link=document.createElement('link');link.rel='stylesheet';link.href='./css/public-store.css?v=20260913-003';link.dataset.publicStore='1';document.head.appendChild(link);
+  const link=document.createElement('link');link.rel='stylesheet';link.href='./css/public-store.css?v=20260913-004';link.dataset.publicStore='1';document.head.appendChild(link);
 }
 
 function mount(config){
@@ -25,7 +27,7 @@ function mount(config){
         <div class="public-hero-copy">
           <span class="eyebrow">VITRINE OFICIAL • ECOSSISTEMA RENOVA</span>
           <h1>Produtos, serviços e soluções de empresas conectadas ao RENOVA.</h1>
-          <p>Explore ofertas de diferentes empresas em uma única vitrine. Compre, conheça novas soluções ou crie sua conta para administrar seu próprio negócio dentro do Ecossistema RENOVA.</p>
+          <p>Explore ofertas de diferentes empresas em uma única vitrine. Compre sem precisar criar conta ou conheça o Ecossistema RENOVA para administrar seu próprio negócio.</p>
           <div class="public-hero-actions">
             <button id="exploreProductsBtn" class="public-btn primary" type="button">Explorar produtos</button>
             <button id="heroSignupBtn" class="public-btn" type="button">Criar conta grátis</button>
@@ -35,7 +37,7 @@ function mount(config){
           <img src="${esc(brand.logoUrl)}" alt="RENOVA">
           <strong>Uma vitrine. Muitas empresas.</strong>
           <span>Produtos digitais, serviços, planos e soluções em um único ambiente.</span>
-          <small>Pagamento e liberação de acesso serão integrados ao fluxo de Checkout Transparente do Ecossistema RENOVA.</small>
+          <small>Checkout transparente: compre como convidado com PIX, cartão ou boleto quando a oferta disponibilizar essas formas de pagamento.</small>
         </div>
       </section>
 
@@ -77,6 +79,7 @@ function paymentBadges(p){
 export function createPublicStore({supabase,config,onLogin,onThemeToggle,showToast}){
   ensureCss();mount(config);
   let products=[];
+  const guestCheckout=createPublicCheckout({supabase,showToast});
 
   function show(){document.getElementById('publicView')?.classList.remove('hidden');}
   function hide(){document.getElementById('publicView')?.classList.add('hidden');document.getElementById('publicModalBackdrop')?.remove();}
@@ -122,11 +125,8 @@ export function createPublicStore({supabase,config,onLogin,onThemeToggle,showToa
 
   function handleBuy(p){
     localStorage.setItem('renova_pending_product',JSON.stringify({produto_id:p.produto_id,empresa_id:p.empresa_id,nome:p.nome,preco:p.preco_promocional||p.preco,checkout_tipo:p.checkout_tipo,at:new Date().toISOString()}));
-    if(p.link_externo){window.open(p.link_externo,'_blank','noopener,noreferrer');return;}
     document.getElementById('publicModalBackdrop')?.remove();
-    const modal=modalShell('Continuar compra',`<div class="offer-modal-body"><span class="eyebrow">COMPRA SEGURA RENOVA</span><h2>${esc(p.nome)}</h2><p>O produto foi selecionado e ficará reservado no fluxo da sua sessão. Entre ou crie uma conta para continuar para o checkout interno.</p><div class="offer-cta"><button class="primary" data-login-buy type="button">Entrar e continuar</button><button class="secondary" data-signup-buy type="button">Criar conta e continuar</button></div></div>`);
-    modal.querySelector('[data-login-buy]')?.addEventListener('click',()=>{modal.remove();hide();onLogin?.();});
-    modal.querySelector('[data-signup-buy]')?.addEventListener('click',()=>{modal.remove();openSignup();});
+    guestCheckout.open(p);
   }
 
   function render(){
